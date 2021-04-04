@@ -36,6 +36,13 @@ services:
     depends_on:
       - db
 
+  frontend:
+    build: ./frontend
+    entrypoint: ./.docker/entrypoint.sh
+    container_name: micro-auth-frontend
+    volumes:
+      - ./frontend:/home/node/app
+
 networks:
     app-auth-network:
         driver: bridge
