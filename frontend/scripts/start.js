@@ -26,7 +26,7 @@ const {
   createCompiler,
 //  prepareProxy,
 //  prepareUrls,
-} = require('react-dev-utils/WebpackDevServerUtils');
+} = require('../config/WebpackDevServerUtils');
 //const openBrowser = require('react-dev-utils/openBrowser');
 //const semver = require('semver');
 const paths = require('../config/paths');
