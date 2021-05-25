@@ -1,6 +1,32 @@
-version: '3'
+version: "3"
 
 services:
+  app:
+    image: quay.io/keycloak/keycloak:11.0.2
+    container_name: micro-auth-app
+    volumes:
+      - ./frontend/build/catalog-admin:/opt/jboss/keycloak/themes/catalog-admin
+      - ./keycloak/config/standalone-ha.xml:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml
+      - ./keycloak/test-realm-export.json:/tmp/test-realm-export.json
+    environment:
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=admin
+      - KEYCLOAK_IMPORT=/tmp/test-realm-export.json
+      - DB_ADDR=db
+      - DB_VENDOR=POSTGRES
+      - DB_SCHEMA=public
+      - DB_DATABASE=micro_auth
+      - DB_PORT=5432
+      - DB_USER=root
+      - DB_PASSWORD=root
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+    networks: 
+      default:
+        aliases: 
+          - app.test
 
   db:
     image: postgres
@@ -14,27 +40,7 @@ services:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
     networks:
-      - app-auth-network
-
-  app:
-    image: quay.io/keycloak/keycloak:11.0.2
-    container_name: micro-auth-app
-    environment: 
-      - KEYCLOAK_USER=admin
-      - KEYCLOAK_PASSWORD=admin
-      - DB_ADDR=db
-      - DB_VENDOR=POSTGRES
-      - DB_SCHEMA=public
-      - DB_DATABASE=micro_auth
-      - DB_PORT=5432
-      - DB_USER=root
-      - DB_PASSWORD=root
-    ports:
-      - "8080:8080"
-    networks:
-      - app-auth-network
-    depends_on:
-      - db
+      - default
 
   frontend:
     build: ./frontend
@@ -42,7 +48,23 @@ services:
     container_name: micro-auth-frontend
     volumes:
       - ./frontend:/home/node/app
+    networks: 
+      - default
 
-networks:
-    app-auth-network:
-        driver: bridge
+  test:
+    build: ./tests
+    entrypoint: ./.docker/entrypoint.sh
+    container_name: micro-auth-test
+    volumes:
+      - ./tests:/home/node/app
+    networks: 
+      - default
+
+  selenium:
+    image: selenium/standalone-chrome:88.0.4324.150-chromedriver-88.0.4324.96
+    networks: 
+      - default
+
+networks: 
+  default:
+    driver: bridge

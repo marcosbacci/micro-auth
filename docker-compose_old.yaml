@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+
+  db:
+    image: postgres
+    container_name: micro-auth-db
+    restart: always
+    tty: true
+    volumes:
+      - ./.docker/dbdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=micro_auth
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+    networks:
+      - app-auth-network
+
+  app:
+    image: quay.io/keycloak/keycloak:11.0.2
+    container_name: micro-auth-app
+    environment: 
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=admin
+      - DB_ADDR=db
+      - DB_VENDOR=POSTGRES
+      - DB_SCHEMA=public
+      - DB_DATABASE=micro_auth
+      - DB_PORT=5432
+      - DB_USER=root
+      - DB_PASSWORD=root
+    ports:
+      - "8080:8080"
+    networks:
+      - app-auth-network
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    entrypoint: ./.docker/entrypoint.sh
+    container_name: micro-auth-frontend
+    volumes:
+      - ./frontend:/home/node/app
+
+networks:
+    app-auth-network:
+        driver: bridge

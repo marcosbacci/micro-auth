@@ -140,7 +140,7 @@ function createCompiler({
   let tsMessagesResolver;
 
   const isMulti = compiler.compilers && compiler.compilers.length > 0;
-  const firstCompiler = isMulti ? compiler.compilers[0] : compiler;
+  const firstCompiler = isMulti ? compiler.compilers[0]: compiler;
 
   if (useTypeScript) {
     firstCompiler.hooks.beforeCompile.tap('beforeCompile', () => {
